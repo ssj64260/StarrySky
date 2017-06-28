@@ -11,6 +11,7 @@ import com.cxb.starrysky.utils.ToastMaster;
 import com.cxb.starrysky.widget.starrysky.OnStarSelectListener;
 import com.cxb.starrysky.widget.starrysky.StarrySkyView2;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,13 +48,15 @@ public class StarrySkyActivity extends BaseActivity {
     }
 
     private void setData() {
+        mList = new ArrayList<>();
+
         Observable.create(new ObservableOnSubscribe<List<PersonInfo>>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<List<PersonInfo>> e) throws Exception {
                 String json = AssetsUtil.getAssetsTxtByName(StarrySkyActivity.this, "family_tree.txt");
-                mList = JSONObject.parseArray(json, PersonInfo.class);
+                List<PersonInfo> temp = JSONObject.parseArray(json, PersonInfo.class);
                 if (!e.isDisposed()) {
-                    e.onNext(mList);
+                    e.onNext(temp);
                     e.onComplete();
                 }
             }
@@ -62,12 +65,21 @@ public class StarrySkyActivity extends BaseActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<PersonInfo>>() {
                     @Override
-                    public void accept(@NonNull List<PersonInfo> psersonList) throws Exception {
-                        if (psersonList != null) {
-                            ssvStar.setPersonList(psersonList);
+                    public void accept(@NonNull List<PersonInfo> personList) throws Exception {
+                        if (personList != null) {
+                            mList.clear();
+                            mList.addAll(personList);
                         }
+                        setPersonAvatar();
                     }
                 });
+    }
+
+    private void setPersonAvatar() {
+        if (mList != null) {
+            Collections.shuffle(mList);
+            ssvStar.setPersonList(mList);
+        }
     }
 
     private OnStarSelectListener starListener = new OnStarSelectListener() {
@@ -78,10 +90,7 @@ public class StarrySkyActivity extends BaseActivity {
 
         @Override
         public void onSliding() {
-            if (mList != null) {
-                Collections.shuffle(mList);
-                ssvStar.setPersonList(mList);
-            }
+            setPersonAvatar();
         }
     };
 

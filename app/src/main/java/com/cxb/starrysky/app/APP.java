@@ -4,7 +4,6 @@ import android.app.Application;
 
 import com.cxb.starrysky.R;
 import com.orhanobut.logger.Logger;
-import com.squareup.leakcanary.LeakCanary;
 
 
 /**
@@ -34,7 +33,7 @@ public class APP extends Application {
     public void onCreate() {
         super.onCreate();
 
-        LeakCanary.install(getInstance());
+//        LeakCanary.install(getInstance());
 
         Logger.init(getString(R.string.app_name));
 
