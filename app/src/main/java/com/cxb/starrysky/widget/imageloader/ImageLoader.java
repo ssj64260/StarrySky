@@ -3,7 +3,6 @@ package com.cxb.starrysky.widget.imageloader;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.cxb.starrysky.R;
 import com.cxb.starrysky.app.APP;
@@ -21,7 +20,7 @@ public class ImageLoader implements ImageLoaderWrapper {
                 .error(R.drawable.family_avatar)
                 .centerCrop()
                 .transform(transformation)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .animate(R.anim.anime_scale)
                 .into(imageView);
     }

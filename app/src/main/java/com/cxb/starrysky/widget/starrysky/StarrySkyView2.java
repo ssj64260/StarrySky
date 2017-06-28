@@ -23,7 +23,7 @@ import java.util.List;
  * 星空ViewGroup
  */
 
-public class StarrySkyView extends ViewGroup {
+public class StarrySkyView2 extends ViewGroup {
 
     private static final int CENTER_VIEW_WIDTH_DP = 90;//中间View宽度80dp
     private static final int CENTER_VIEW_HEIGHT_DP = 90;//中间View高度80dp
@@ -35,24 +35,12 @@ public class StarrySkyView extends ViewGroup {
     private static final double COEFFICIENT_ADD3 = Math.sqrt(2f) * 3f / 4f + 1f / 2f;//圆形布局系数
     private static final double COEFFICIENT_SUB3 = Math.sqrt(2f) * 3f / 4f - 1f / 2f;//圆形布局系数
 
-    private static final int HORITONTAL_SPACE_DP = 10;//水平间隔10dp
-    private static final int VERTICAL_SPACE_DP = 10;//垂直间隔10dp
-
-    private static final int HORITONTAL_OFFSET_DP = 25;//水平偏移量20dp
-    private static final int VERTICAL_OFFSET_DP = 15;//垂直偏移量10dp
-
     private OnStarSelectListener mOnStarSelectListener;
 
     private int mCenterViewWidthPX;//中间View宽度PX
     private int mCenterViewHeightPX;//中间View高度PX
     private int mAroundViewWidthPX;//周围View宽度PX
     private int mAroundViewHeightPX;//周围View高度PX
-
-    private int mVerticalSpaceWidthPX;//垂直间隔距离
-    private int mHoritontalSpaceWidthPX;//水平间隔距离
-
-    private int mHoritontalOffsetPX;//水平偏移量
-    private int mVerticalOffsetPX;//垂直偏移量
 
     private int mShowWidthPX;//在屏幕所占的宽度
     private int mShowHeightPX;//在屏幕所占的高度
@@ -68,17 +56,17 @@ public class StarrySkyView extends ViewGroup {
     private GlideCircleTransform mTransform;//画圆类
 
     private Point[][] points;
-    private int pointTypePosition = 0;//当前类型
+    private int pointTypePosition = 2;//当前类型
 
-    public StarrySkyView(Context context) {
+    public StarrySkyView2(Context context) {
         this(context, null, 0);
     }
 
-    public StarrySkyView(Context context, AttributeSet attrs) {
+    public StarrySkyView2(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public StarrySkyView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public StarrySkyView2(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         mImageLoader = ImageLoaderFactory.getLoader();
@@ -88,11 +76,6 @@ public class StarrySkyView extends ViewGroup {
         mCenterViewHeightPX = DisplayUtil.dip2px(CENTER_VIEW_HEIGHT_DP);
         mAroundViewWidthPX = DisplayUtil.dip2px(AROUND_VIEW_WIDTH_DP);
         mAroundViewHeightPX = DisplayUtil.dip2px(AROUND_VIEW_HEIGHT_DP);
-
-        mHoritontalSpaceWidthPX = DisplayUtil.dip2px(HORITONTAL_SPACE_DP);
-        mVerticalSpaceWidthPX = DisplayUtil.dip2px(VERTICAL_SPACE_DP);
-        mHoritontalOffsetPX = DisplayUtil.dip2px(HORITONTAL_OFFSET_DP);
-        mVerticalOffsetPX = DisplayUtil.dip2px(VERTICAL_OFFSET_DP);
 
         mCenterWidthMeasureSpec = MeasureSpec.makeMeasureSpec(mCenterViewWidthPX, MeasureSpec.EXACTLY);
         mCenterHeightMeasureSpec = MeasureSpec.makeMeasureSpec(mCenterViewHeightPX, MeasureSpec.EXACTLY);

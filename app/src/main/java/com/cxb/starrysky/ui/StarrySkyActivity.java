@@ -4,13 +4,11 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bumptech.glide.Glide;
 import com.cxb.starrysky.R;
-import com.cxb.starrysky.app.APP;
 import com.cxb.starrysky.app.BaseActivity;
 import com.cxb.starrysky.model.PersonInfo;
 import com.cxb.starrysky.utils.AssetsUtil;
-import com.cxb.starrysky.widget.starrysky.StarrySkyView;
+import com.cxb.starrysky.widget.starrysky.StarrySkyView2;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +27,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class StarrySkyActivity extends BaseActivity {
 
-    private StarrySkyView ssvStar;
+    private StarrySkyView2 ssvStar;
     private List<PersonInfo> mList;
 
     @Override
@@ -43,7 +41,7 @@ public class StarrySkyActivity extends BaseActivity {
     }
 
     private void initView() {
-        ssvStar = (StarrySkyView) findViewById(R.id.ssv_star);
+        ssvStar = (StarrySkyView2) findViewById(R.id.ssv_star);
         ssvStar.setOnClickListener(click);
     }
 
@@ -78,7 +76,6 @@ public class StarrySkyActivity extends BaseActivity {
             switch (v.getId()) {
                 case R.id.ssv_star:
                     if (mList != null) {
-                        Glide.get(APP.getInstance()).clearMemory();
                         Collections.shuffle(mList);
                         ssvStar.setPersonList(mList);
                     }
