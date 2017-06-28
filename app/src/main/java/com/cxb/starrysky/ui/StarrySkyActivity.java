@@ -1,13 +1,14 @@
 package com.cxb.starrysky.ui;
 
 import android.os.Bundle;
-import android.view.View;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cxb.starrysky.R;
 import com.cxb.starrysky.app.BaseActivity;
 import com.cxb.starrysky.model.PersonInfo;
 import com.cxb.starrysky.utils.AssetsUtil;
+import com.cxb.starrysky.utils.ToastMaster;
+import com.cxb.starrysky.widget.starrysky.OnStarSelectListener;
 import com.cxb.starrysky.widget.starrysky.StarrySkyView2;
 
 import java.util.Collections;
@@ -42,7 +43,7 @@ public class StarrySkyActivity extends BaseActivity {
 
     private void initView() {
         ssvStar = (StarrySkyView2) findViewById(R.id.ssv_star);
-        ssvStar.setOnClickListener(click);
+        ssvStar.setOnStarSelectListener(starListener);
     }
 
     private void setData() {
@@ -69,17 +70,17 @@ public class StarrySkyActivity extends BaseActivity {
                 });
     }
 
-    //点击监听
-    private View.OnClickListener click = new View.OnClickListener() {
+    private OnStarSelectListener starListener = new OnStarSelectListener() {
         @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.ssv_star:
-                    if (mList != null) {
-                        Collections.shuffle(mList);
-                        ssvStar.setPersonList(mList);
-                    }
-                    break;
+        public void onStarSelect(int position) {
+            ToastMaster.toast(mList.get(position).getMemberName());
+        }
+
+        @Override
+        public void onSliding() {
+            if (mList != null) {
+                Collections.shuffle(mList);
+                ssvStar.setPersonList(mList);
             }
         }
     };

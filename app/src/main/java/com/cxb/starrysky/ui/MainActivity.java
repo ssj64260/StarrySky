@@ -1,12 +1,12 @@
-package com.cxb.starrysky;
+package com.cxb.starrysky.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.cxb.starrysky.R;
 import com.cxb.starrysky.app.BaseActivity;
-import com.cxb.starrysky.ui.StarrySkyActivity;
 
 public class MainActivity extends BaseActivity {
 

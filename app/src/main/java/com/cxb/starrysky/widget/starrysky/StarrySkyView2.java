@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -11,7 +12,6 @@ import android.widget.ImageView;
 import com.cxb.starrysky.R;
 import com.cxb.starrysky.model.PersonInfo;
 import com.cxb.starrysky.utils.DisplayUtil;
-import com.cxb.starrysky.utils.ToastMaster;
 import com.cxb.starrysky.widget.imageloader.GlideCircleTransform;
 import com.cxb.starrysky.widget.imageloader.ImageLoaderFactory;
 import com.cxb.starrysky.widget.imageloader.ImageLoaderWrapper;
@@ -20,7 +20,7 @@ import java.util.List;
 
 
 /**
- * 星空ViewGroup
+ * 星空ViewGroup 固定布局
  */
 
 public class StarrySkyView2 extends ViewGroup {
@@ -29,6 +29,7 @@ public class StarrySkyView2 extends ViewGroup {
     private static final int CENTER_VIEW_HEIGHT_DP = 90;//中间View高度80dp
     private static final int AROUND_VIEW_WIDTH_DP = 50;//周围View宽度50dp
     private static final int AROUND_VIEW_HEIGHT_DP = 50;//周围View高度50dp
+    private static final int SCROLL_WIDTH = 2;//移动超过2dp，响应滑动，否则属于点击
 
     private static final double COEFFICIENT_ADD1 = Math.sqrt(2f) / 4f + 1f / 2f;//圆形布局系数
     private static final double COEFFICIENT_SUB1 = Math.sqrt(2f) / 4f - 1f / 2f;//圆形布局系数
@@ -50,13 +51,18 @@ public class StarrySkyView2 extends ViewGroup {
     private int mAroundWidthMeasureSpec;
     private int mAroundHeightMeasureSpec;
 
+    private int mScrollWidth;//移动范围
+    private int mLastTouchX;//最后一次触摸的X坐标
+    private int mLastInterceptX;
+    private int mLastInterceptY;
+
     private List<PersonInfo> mPersonList;
 
     private ImageLoaderWrapper mImageLoader;//图片加载器
     private GlideCircleTransform mTransform;//画圆类
 
     private Point[][] points;
-    private int pointTypePosition = 2;//当前类型
+    private int pointTypePosition = 0;//当前类型
 
     public StarrySkyView2(Context context) {
         this(context, null, 0);
@@ -72,6 +78,7 @@ public class StarrySkyView2 extends ViewGroup {
         mImageLoader = ImageLoaderFactory.getLoader();
         mTransform = new GlideCircleTransform(context, 1, R.color.white);
 
+        mScrollWidth = DisplayUtil.dip2px(SCROLL_WIDTH);
         mCenterViewWidthPX = DisplayUtil.dip2px(CENTER_VIEW_WIDTH_DP);
         mCenterViewHeightPX = DisplayUtil.dip2px(CENTER_VIEW_HEIGHT_DP);
         mAroundViewWidthPX = DisplayUtil.dip2px(AROUND_VIEW_WIDTH_DP);
@@ -84,32 +91,6 @@ public class StarrySkyView2 extends ViewGroup {
 
         points = new Point[][]{
                 {
-                        new Point(-mAroundViewWidthPX, -(mCenterViewHeightPX + mAroundViewHeightPX)),
-                        new Point(mCenterViewWidthPX, -(mCenterViewHeightPX + mAroundViewHeightPX)),
-                        new Point(0, -(mCenterViewHeightPX + mAroundViewHeightPX) / 2),
-                        new Point(mCenterViewWidthPX * 2 - mAroundViewWidthPX, -mAroundViewHeightPX),
-                        new Point(-mCenterViewWidthPX, 0),
-                        new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2, mCenterViewHeightPX - mAroundViewHeightPX),
-                        new Point(-mCenterViewWidthPX, mCenterViewHeightPX),
-                        new Point(0, mCenterViewHeightPX * 2 - mAroundViewHeightPX),
-                        new Point(-mAroundViewWidthPX, mCenterViewHeightPX * 3 - mAroundViewHeightPX),
-                        new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2, mCenterViewHeightPX * 2)
-                },
-                {
-                        new Point(-mCenterViewWidthPX, -(mCenterViewHeightPX + mAroundViewHeightPX / 2)),
-                        new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2, -(mCenterViewHeightPX + mAroundViewHeightPX)),
-                        new Point((mCenterViewWidthPX - mAroundViewWidthPX) / 2, -mCenterViewHeightPX),
-                        new Point(-(mCenterViewWidthPX + mAroundViewWidthPX) / 2, (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
-                        new Point(mCenterViewWidthPX * 2 - mAroundViewWidthPX, 0),
-                        new Point(-mCenterViewWidthPX, (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
-                        new Point((mCenterViewWidthPX - mAroundViewWidthPX) / 2, mCenterViewHeightPX * 2 - mAroundViewHeightPX),
-                        new Point(-mAroundViewWidthPX, mCenterViewHeightPX * 3 - mAroundViewHeightPX),
-                        new Point(mCenterViewWidthPX * 2 - mAroundViewHeightPX, mCenterViewHeightPX * 2 - mAroundViewHeightPX),
-                        new Point(mCenterViewWidthPX, mCenterViewHeightPX * 2 + mAroundViewHeightPX / 2)
-                },
-                {
-                        new Point(-mAroundViewWidthPX, -mAroundViewHeightPX * 3),
-                        new Point(mCenterViewWidthPX, mCenterViewHeightPX + mAroundViewHeightPX * 2),
                         new Point(-mAroundViewWidthPX * 2, (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
                         new Point((mCenterViewWidthPX - mAroundViewWidthPX) / 2, -mAroundViewHeightPX * 2),
                         new Point(mCenterViewWidthPX + mAroundViewWidthPX, (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
@@ -121,44 +102,75 @@ public class StarrySkyView2 extends ViewGroup {
                         new Point((int) -(mCenterViewWidthPX * COEFFICIENT_SUB1 + mAroundViewWidthPX * COEFFICIENT_ADD3),
                                 (int) (mCenterViewHeightPX * COEFFICIENT_ADD1 + mAroundViewHeightPX * COEFFICIENT_SUB3)),
                         new Point((int) (mCenterViewWidthPX * COEFFICIENT_ADD1 + mAroundViewWidthPX * COEFFICIENT_SUB3),
-                                (int) (mCenterViewHeightPX * COEFFICIENT_ADD1 + mAroundViewHeightPX * COEFFICIENT_SUB3))
+                                (int) (mCenterViewHeightPX * COEFFICIENT_ADD1 + mAroundViewHeightPX * COEFFICIENT_SUB3)),
+                        new Point((mCenterViewWidthPX - mAroundViewWidthPX * 5) / 2, -mAroundViewHeightPX * 7 / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2, -mAroundViewHeightPX * 7 / 2),
+                        new Point((mCenterViewWidthPX + mAroundViewWidthPX * 3) / 2, -mAroundViewHeightPX * 7 / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewWidthPX * 5) / 2, mCenterViewHeightPX + mAroundViewHeightPX * 5 / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2, mCenterViewHeightPX + mAroundViewHeightPX * 5 / 2),
+                        new Point((mCenterViewWidthPX + mAroundViewWidthPX * 3) / 2, mCenterViewHeightPX + mAroundViewHeightPX * 5 / 2)
+                },
+                {
+                        new Point((mCenterViewWidthPX - mAroundViewWidthPX) / 2,
+                                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewWidthPX * 3) / 4,
+                                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 4,
+                                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2),
+                        new Point(-mAroundViewWidthPX,
+                                (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX,
+                                (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
+                        new Point(-(mCenterViewWidthPX + mAroundViewWidthPX * 5) / 4,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewWidthPX * 3) / 4,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 4,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX * 5 + mAroundViewWidthPX) / 4,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point(-(mCenterViewWidthPX + mAroundViewWidthPX * 3) / 2,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                        new Point(-mAroundViewWidthPX,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewWidthPX) / 2,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX * 3 + mAroundViewWidthPX) / 2,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                },
+                {
+                        new Point(-mAroundViewWidthPX * 2,
+                                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
+                                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX + mAroundViewWidthPX,
+                                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2),
+                        new Point(-mAroundViewWidthPX * 2,
+                                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
+                                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX + mAroundViewWidthPX,
+                                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2),
+                        new Point(-mAroundViewWidthPX * 2,
+                                (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX + mAroundViewWidthPX,
+                                (mCenterViewHeightPX - mAroundViewHeightPX) / 2),
+                        new Point(-mAroundViewWidthPX * 2,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX + mAroundViewWidthPX,
+                                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2),
+                        new Point(-mAroundViewWidthPX * 2,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                        new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2),
+                        new Point(mCenterViewWidthPX + mAroundViewWidthPX,
+                                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2)
                 }
         };
-
-//        //TODO
-//        pointList.add(new Point(-(mCenterViewWidthPX + mAroundViewWidthPX) / 2 - mHoritontalSpaceWidthPX,
-//                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
-//                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2 + mHoritontalSpaceWidthPX,
-//                -(mCenterViewHeightPX * 3 + mAroundViewHeightPX) / 2));
-//
-//        pointList.add(new Point(-(mCenterViewWidthPX + mAroundViewWidthPX) / 2 - mHoritontalSpaceWidthPX,
-//                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
-//                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2 + mHoritontalSpaceWidthPX,
-//                -(mCenterViewHeightPX + mAroundViewHeightPX) / 2));
-//
-//        pointList.add(new Point(-(mCenterViewWidthPX + mAroundViewWidthPX) / 2 - mHoritontalSpaceWidthPX,
-//                (mCenterViewHeightPX - mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2 + mHoritontalSpaceWidthPX,
-//                (mCenterViewHeightPX - mAroundViewHeightPX) / 2));
-//
-//        pointList.add(new Point(-(mCenterViewWidthPX + mAroundViewWidthPX) / 2 - mHoritontalSpaceWidthPX,
-//                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
-//                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2 + mHoritontalSpaceWidthPX,
-//                (mCenterViewHeightPX * 3 - mAroundViewHeightPX) / 2));
-//
-//        pointList.add(new Point(-(mCenterViewWidthPX + mAroundViewWidthPX) / 2 - mHoritontalSpaceWidthPX,
-//                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX - mAroundViewHeightPX) / 2,
-//                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2));
-//        pointList.add(new Point((mCenterViewWidthPX * 3 - mAroundViewWidthPX) / 2 + mHoritontalSpaceWidthPX,
-//                (mCenterViewHeightPX * 5 - mAroundViewHeightPX) / 2));
-
     }
 
     public void setPersonList(List<PersonInfo> list) {
@@ -170,12 +182,7 @@ public class StarrySkyView2 extends ViewGroup {
 
     private void initView() {
         if (mPersonList != null) {
-            pointTypePosition++;
-            if (pointTypePosition > 2) {
-                pointTypePosition = 0;
-            }
-
-            final int personSize = mPersonList.size() > 11 ? 11 : mPersonList.size();
+            final int personSize = mPersonList.size() > 15 ? 15 : mPersonList.size();
             for (int i = 0; i < personSize; i++) {
                 final View starryView = LayoutInflater.from(getContext()).inflate(R.layout.item_starry_sky, this, false);
                 starryView.setTag(i);
@@ -247,10 +254,65 @@ public class StarrySkyView2 extends ViewGroup {
             if (mOnStarSelectListener != null) {
                 int position = (int) v.getTag();
                 mOnStarSelectListener.onStarSelect(position);
-                ToastMaster.toast(mPersonList.get(position).getMemberName());
             }
-            int position = (int) v.getTag();
-            ToastMaster.toast(mPersonList.get(position).getMemberName());
         }
     };
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mLastTouchX = (int) event.getX();
+                break;
+            case MotionEvent.ACTION_MOVE:
+
+                break;
+            case MotionEvent.ACTION_UP:
+                final int distanceX = (int) event.getX() - mLastTouchX;
+                if (Math.abs(distanceX) > mShowWidthPX / 3) {
+                    if (mOnStarSelectListener != null) {
+                        if (distanceX > 0) {
+                            pointTypePosition--;
+                            if (pointTypePosition < 0) {
+                                pointTypePosition = points.length - 1;
+                            }
+                        } else {
+                            pointTypePosition++;
+                            if (pointTypePosition >= points.length) {
+                                pointTypePosition = 0;
+                            }
+                        }
+                        mOnStarSelectListener.onSliding();
+                    }
+                }
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        boolean intercerpt = false;
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mLastInterceptX = (int) event.getX();
+                mLastInterceptY = (int) event.getY();
+                mLastTouchX = (int) event.getX();
+                intercerpt = false;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                final int distanceX = Math.abs((int) event.getX() - mLastInterceptX);
+                final int distanceY = Math.abs((int) event.getY() - mLastInterceptY);
+                if (distanceX < mScrollWidth && distanceY < mScrollWidth) {
+                    intercerpt = false;
+                } else {
+                    intercerpt = true;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                intercerpt = false;
+                break;
+        }
+        return intercerpt;
+    }
 }
