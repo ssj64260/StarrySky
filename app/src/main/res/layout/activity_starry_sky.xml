@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#3C3C3C"
+    android:background="@drawable/starry_sky_background"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tv_title"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#3C3C3C">
+        android:background="#99000000"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        tools:text="固定三种布局" />
 
-    </LinearLayout>
-
-    <com.cxb.starrysky.widget.starrysky.StarrySkyView2
+    <com.cxb.starrysky.widget.starrysky.StarrySkyView
         android:id="@+id/ssv_star"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@drawable/starry_sky_background" />
+        android:visibility="invisible" />
+
+    <com.cxb.starrysky.widget.starrysky.StarrySkyView2
+        android:id="@+id/ssv_star2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#c3c3c3">
+        android:background="@color/white">
 
     </LinearLayout>
 

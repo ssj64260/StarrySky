@@ -1,6 +1,8 @@
 package com.cxb.starrysky.ui;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cxb.starrysky.R;
@@ -9,6 +11,7 @@ import com.cxb.starrysky.model.PersonInfo;
 import com.cxb.starrysky.utils.AssetsUtil;
 import com.cxb.starrysky.utils.ToastMaster;
 import com.cxb.starrysky.widget.starrysky.OnStarSelectListener;
+import com.cxb.starrysky.widget.starrysky.StarrySkyView;
 import com.cxb.starrysky.widget.starrysky.StarrySkyView2;
 
 import java.util.ArrayList;
@@ -29,8 +32,14 @@ import io.reactivex.schedulers.Schedulers;
 
 public class StarrySkyActivity extends BaseActivity {
 
-    private StarrySkyView2 ssvStar;
+    public static final String IS_FIXED = "is_fixed";//是否固定
+
+    private TextView tvTitle;
+    private StarrySkyView ssvStar;
+    private StarrySkyView2 ssvStar2;
     private List<PersonInfo> mList;
+
+    private boolean isFixed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +52,26 @@ public class StarrySkyActivity extends BaseActivity {
     }
 
     private void initView() {
-        ssvStar = (StarrySkyView2) findViewById(R.id.ssv_star);
-        ssvStar.setOnStarSelectListener(starListener);
+        tvTitle = (TextView) findViewById(R.id.tv_title);
+        ssvStar = (StarrySkyView) findViewById(R.id.ssv_star);
+        ssvStar2 = (StarrySkyView2) findViewById(R.id.ssv_star2);
     }
 
     private void setData() {
+        isFixed = getIntent().getBooleanExtra(IS_FIXED, false);
+
+        if (isFixed) {
+            tvTitle.setText("固定三种布局");
+            ssvStar.setVisibility(View.GONE);
+            ssvStar2.setVisibility(View.VISIBLE);
+            ssvStar2.setOnStarSelectListener(starListener);
+        } else {
+            tvTitle.setText("随机零散分布");
+            ssvStar.setVisibility(View.VISIBLE);
+            ssvStar2.setVisibility(View.GONE);
+            ssvStar.setOnStarSelectListener(starListener);
+        }
+
         mList = new ArrayList<>();
 
         Observable.create(new ObservableOnSubscribe<List<PersonInfo>>() {
@@ -78,7 +102,11 @@ public class StarrySkyActivity extends BaseActivity {
     private void setPersonAvatar() {
         if (mList != null) {
             Collections.shuffle(mList);
-            ssvStar.setPersonList(mList);
+            if (isFixed) {
+                ssvStar2.setPersonList(mList);
+            } else {
+                ssvStar.setPersonList(mList.subList(0, 15));
+            }
         }
     }
 

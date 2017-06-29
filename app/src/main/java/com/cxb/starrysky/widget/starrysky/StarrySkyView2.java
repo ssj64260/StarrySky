@@ -252,7 +252,7 @@ public class StarrySkyView2 extends ViewGroup {
         @Override
         public void onClick(View v) {
             if (mOnStarSelectListener != null) {
-                int position = (int) v.getTag();
+                final int position = (int) v.getTag();
                 mOnStarSelectListener.onStarSelect(position);
             }
         }

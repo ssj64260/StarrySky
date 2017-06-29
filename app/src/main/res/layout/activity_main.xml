@@ -21,6 +21,17 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/tv_no_fixed"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="20dp"
+            android:background="#3C3C3C"
+            android:gravity="center"
+            android:text="随机零散分布"
+            android:textColor="#ffffff"
+            android:textSize="16sp" />
+
+        <TextView
             android:id="@+id/tv_fixed"
             android:layout_width="match_parent"
             android:layout_height="40dp"
@@ -28,17 +39,6 @@
             android:background="#3C3C3C"
             android:gravity="center"
             android:text="固定三种布局"
-            android:textColor="#ffffff"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tv_no_fixed"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_margin="20dp"
-            android:background="#3C3C3C"
-            android:gravity="center"
-            android:text="开发中..."
             android:textColor="#ffffff"
             android:textSize="16sp" />
 

@@ -37,14 +37,17 @@ public class MainActivity extends BaseActivity {
     private View.OnClickListener click = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, StarrySkyActivity.class);
             switch (v.getId()) {
                 case R.id.tv_fixed:
-                    startActivity(new Intent(MainActivity.this, StarrySkyActivity.class));
+                    intent.putExtra(StarrySkyActivity.IS_FIXED, true);
                     break;
                 case R.id.tv_no_fixed:
-
+                    intent.putExtra(StarrySkyActivity.IS_FIXED, false);
                     break;
             }
+            startActivity(intent);
         }
     };
 }
