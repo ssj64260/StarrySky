@@ -16,7 +16,7 @@ public class CircleInfo {
         this.radius = radius;
     }
 
-    public Point CircularPoint(int originX, int originY) {
+    public Point circularPoint(int originX, int originY) {
         Point circularPoint = new Point();
         circularPoint.x = (int) (originX + radius * Math.cos(angle * Math.PI / 180f));
         circularPoint.y = (int) (originY + radius * Math.sin(angle * Math.PI / 180f));

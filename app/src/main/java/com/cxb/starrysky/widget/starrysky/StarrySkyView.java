@@ -218,7 +218,7 @@ public class StarrySkyView extends ViewGroup {
             for (int i = 1; i < childCount; i++) {
                 final View aroundView = getChildAt(i);
                 final CircleInfo circle = circleList.get(i - 1);
-                final Point aroundPoint = circle.CircularPoint(centerPointX, centerPointY);
+                final Point aroundPoint = circle.circularPoint(centerPointX, centerPointY);
                 final int aroundLeft = (int) (aroundPoint.x - mAroundViewWidthPX / 2f);
                 final int aroundTop = (int) (aroundPoint.y - mAroundViewWidthPX / 2f);
                 setChildViewFrame(aroundView, aroundLeft, aroundTop, mAroundViewWidthPX, mAroundViewWidthPX);
